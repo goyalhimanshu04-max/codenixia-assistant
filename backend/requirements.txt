@@ -1,6 +1,5 @@
 flask
 flask-cors
 python-dotenv
-openai
 google-generativeai
-sqlite3
+google-genai
