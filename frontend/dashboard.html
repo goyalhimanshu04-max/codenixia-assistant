@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard — Codenixia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0a0a0f;--surface:#12121a;--card:#1a1a28;--border:#2a2a3d;--accent:#6c63ff;--accent2:#ff6584;--text:#e8e8f0;--muted:#7070a0;--success:#22c55e}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+    body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% 10%,rgba(108,99,255,0.12) 0%,transparent 60%);pointer-events:none;z-index:0}
+
+    header{border-bottom:1px solid var(--border);background:rgba(10,10,15,0.9);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100}
+    .header-inner{display:flex;align-items:center;justify-content:space-between;padding:16px 32px}
+    .logo{display:flex;align-items:center;gap:12px}
+    .logo-mark{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:16px}
+    .logo-text{font-family:'Syne',sans-serif;font-weight:700;font-size:18px}
+    .logo-text span{color:var(--accent)}
+    .back-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:7px 16px;border-radius:8px;font-size:13px;cursor:pointer;text-decoration:none;transition:color 0.2s}
+    .back-btn:hover{color:var(--text)}
+
+    .content{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:32px}
+    h2{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:8px}
+    .page-sub{color:var(--muted);margin-bottom:32px}
+
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px}
+    .stat-label{font-size:12px;color:var(--muted);font-weight:500;margin-bottom:8px}
+    .stat-value{font-family:'Syne',sans-serif;font-size:36px;font-weight:800}
+    .stat-value.purple{color:var(--accent)}
+    .stat-value.pink{color:var(--accent2)}
+    .stat-value.green{color:var(--success)}
+
+    .section-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:16px}
+    .table-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:24px}
+    table{width:100%;border-collapse:collapse}
+    th{background:var(--surface);padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em}
+    td{padding:12px 16px;font-size:14px;border-top:1px solid var(--border)}
+    tr:hover td{background:rgba(108,99,255,0.05)}
+    .badge-interest{background:rgba(108,99,255,0.15);color:#a09aff;border-radius:100px;padding:3px 10px;font-size:12px;font-weight:500}
+    .empty{padding:40px;text-align:center;color:var(--muted)}
+    .refresh-btn{background:var(--accent);border:none;color:white;padding:8px 18px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500;margin-bottom:16px}
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-mark">C</div>
+      <div class="logo-text">Code<span>nixia</span> <span style="color:var(--muted);font-size:14px;font-weight:400">/ Admin</span></div>
+    </div>
+    <a href="/" class="back-btn">← Back to App</a>
+  </div>
+</header>
+
+<div class="content">
+  <h2>Admin Dashboard</h2>
+  <p class="page-sub">Real-time overview of leads and chatbot interactions.</p>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Leads</div>
+      <div class="stat-value purple" id="stat-leads">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Chat Interactions</div>
+      <div class="stat-value pink" id="stat-chats">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">System Status</div>
+      <div class="stat-value green" style="font-size:22px;padding-top:8px">● Live</div>
+    </div>
+  </div>
+
+  <button class="refresh-btn" onclick="loadDashboard()">↻ Refresh</button>
+
+  <div class="section-title">Recent Leads</div>
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Name</th><th>Email</th><th>Phone</th>
+          <th>Company</th><th>Interest</th><th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="leads-tbody">
+        <tr><td colspan="7" class="empty">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">Interest Breakdown</div>
+  <div class="table-card">
+    <table>
+      <thead><tr><th>Service</th><th>Lead Count</th></tr></thead>
+      <tbody id="interests-tbody">
+        <tr><td colspan="2" class="empty">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+async function loadDashboard() {
+  try {
+    const res = await fetch('/api/dashboard/stats');
+    const data = await res.json();
+
+    document.getElementById('stat-leads').textContent = data.total_leads;
+    document.getElementById('stat-chats').textContent = data.total_chats;
+
+    // Recent Leads
+    const tbody = document.getElementById('leads-tbody');
+    if(data.recent_leads.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty">No leads yet. Submit the form to test!</td></tr>';
+    } else {
+      tbody.innerHTML = data.recent_leads.map((l,i) => `
+        <tr>
+          <td>${l.id}</td>
+          <td><strong>${l.name}</strong></td>
+          <td>${l.email}</td>
+          <td>${l.phone || '—'}</td>
+          <td>${l.company || '—'}</td>
+          <td><span class="badge-interest">${l.interest || 'General'}</span></td>
+          <td>${new Date(l.created_at).toLocaleDateString()}</td>
+        </tr>`).join('');
+    }
+
+    // Interests
+    const itbody = document.getElementById('interests-tbody');
+    if(data.interests.length === 0) {
+      itbody.innerHTML = '<tr><td colspan="2" class="empty">No data yet.</td></tr>';
+    } else {
+      itbody.innerHTML = data.interests.map(i => `
+        <tr>
+          <td><span class="badge-interest">${i.interest}</span></td>
+          <td><strong>${i.count}</strong></td>
+        </tr>`).join('');
+    }
+  } catch(e) {
+    console.error('Dashboard load error:', e);
+  }
+}
+
+loadDashboard();
+setInterval(loadDashboard, 30000); // Auto-refresh every 30s
+</script>
+</body>
+</html>

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Codenixia AI Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --card: #1a1a28;
+      --border: #2a2a3d;
+      --accent: #6c63ff;
+      --accent2: #ff6584;
+      --text: #e8e8f0;
+      --muted: #7070a0;
+      --success: #22c55e;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background mesh */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse 80% 50% at 20% 10%, rgba(108,99,255,0.15) 0%, transparent 60%),
+                  radial-gradient(ellipse 60% 40% at 80% 80%, rgba(255,101,132,0.1) 0%, transparent 60%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    /* HEADER */
+    header {
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      background: rgba(10,10,15,0.8);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .header-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 24px;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-mark {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px;
+    }
+    .logo-text { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; }
+    .logo-text span { color: var(--accent); }
+    nav a {
+      color: var(--muted); text-decoration: none; margin-left: 24px;
+      font-size: 14px; transition: color 0.2s;
+    }
+    nav a:hover { color: var(--text); }
+    .btn-dash {
+      background: var(--accent); color: white; border: none;
+      padding: 8px 18px; border-radius: 8px; font-size: 13px;
+      font-weight: 500; cursor: pointer; text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .btn-dash:hover { opacity: 0.85; }
+
+    /* HERO */
+    .hero {
+      text-align: center; padding: 80px 24px 60px;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.3);
+      color: #a09aff; border-radius: 100px; padding: 6px 16px;
+      font-size: 12px; font-weight: 500; margin-bottom: 24px;
+      animation: fadeUp 0.6s ease both;
+    }
+    .badge::before { content: '●'; font-size: 8px; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+
+    h1 {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(36px,6vw,72px);
+      line-height: 1.05; margin-bottom: 20px;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+    h1 .grad {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-sub {
+      color: var(--muted); font-size: 18px; max-width: 560px; margin: 0 auto 40px;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    /* MAIN GRID */
+    .main-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 24px; padding-bottom: 80px;
+    }
+    @media(max-width:768px){ .main-grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; overflow: hidden;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+    .card-header {
+      padding: 20px 24px 0;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .card-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .card-icon.purple { background: rgba(108,99,255,0.2); }
+    .card-icon.pink   { background: rgba(255,101,132,0.2); }
+    .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; }
+    .card-sub   { color: var(--muted); font-size: 13px; margin-top: 2px; }
+
+    /* CHATBOT */
+    #chat-messages {
+      height: 320px; overflow-y: auto;
+      padding: 16px 24px; display: flex; flex-direction: column; gap: 12px;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    .msg { max-width: 80%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.5; }
+    .msg.user  { background: var(--accent); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .msg.bot   { background: var(--surface); border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 4px; }
+    .msg.typing { color: var(--muted); font-style: italic; }
+
+    .chat-input-row {
+      display: flex; gap: 8px; padding: 16px 24px;
+      border-top: 1px solid var(--border);
+    }
+    .chat-input-row input {
+      flex: 1; background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); border-radius: 10px; padding: 10px 14px;
+      font-size: 14px; font-family: 'DM Sans', sans-serif;
+      outline: none; transition: border-color 0.2s;
+    }
+    .chat-input-row input:focus { border-color: var(--accent); }
+    .send-btn {
+      background: var(--accent); border: none; color: white;
+      width: 42px; height: 42px; border-radius: 10px; cursor: pointer;
+      font-size: 18px; display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.2s;
+    }
+    .send-btn:hover { opacity: 0.85; }
+
+    /* LEAD FORM */
+    .form-body { padding: 20px 24px 24px; }
+    .form-row { margin-bottom: 14px; }
+    .form-row label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
+    .form-row input, .form-row select, .form-row textarea {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); border-radius: 10px; padding: 10px 14px;
+      font-size: 14px; font-family: 'DM Sans', sans-serif;
+      outline: none; transition: border-color 0.2s;
+    }
+    .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+      border-color: var(--accent);
+    }
+    .form-row select option { background: var(--card); }
+    .form-row textarea { resize: none; height: 80px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .submit-btn {
+      width: 100%; padding: 12px; background: linear-gradient(135deg, var(--accent), #9b59f5);
+      border: none; color: white; border-radius: 12px; font-size: 15px;
+      font-weight: 600; font-family: 'Syne', sans-serif; cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .submit-btn:active { transform: translateY(0); }
+
+    .toast {
+      position: fixed; bottom: 30px; right: 30px;
+      background: var(--success); color: white;
+      padding: 14px 24px; border-radius: 12px; font-weight: 500;
+      transform: translateY(80px); opacity: 0; transition: all 0.3s; z-index: 999;
+    }
+    .toast.show { transform: none; opacity: 1; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-mark">C</div>
+      <div class="logo-text">Code<span>nixia</span></div>
+    </div>
+    <nav>
+      <a href="#">Services</a>
+      <a href="#">About</a>
+      <a href="/dashboard" class="btn-dash">Admin Dashboard →</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+  <div class="hero">
+    <div class="badge">AI-Powered Business Assistant</div>
+    <h1>Your Business,<br/><span class="grad">Automated.</span></h1>
+    <p class="hero-sub">Ask anything about our services, or submit your details and we'll reach out within 24 hours.</p>
+  </div>
+
+  <div class="main-grid">
+
+    <!-- CHATBOT -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon purple">🤖</div>
+        <div>
+          <div class="card-title">AI Assistant</div>
+          <div class="card-sub">Ask about services, pricing & more</div>
+        </div>
+      </div>
+      <div id="chat-messages">
+        <div class="msg bot">👋 Hello! I'm the Codenixia AI Assistant. Ask me about our services, pricing, or how we can help automate your business!</div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" id="chat-input" placeholder="Type your question..." />
+        <button class="send-btn" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+
+    <!-- LEAD FORM -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon pink">📋</div>
+        <div>
+          <div class="card-title">Get In Touch</div>
+          <div class="card-sub">We'll contact you within 24 hours</div>
+        </div>
+      </div>
+      <div class="form-body">
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Full Name *</label>
+            <input type="text" id="f-name" placeholder="Himanshu Goyal"/>
+          </div>
+          <div class="form-row">
+            <label>Email *</label>
+            <input type="email" id="f-email" placeholder="himanshu@company.com"/>
+          </div>
+          <div class="form-row">
+            <label>Phone</label>
+            <input type="tel" id="f-phone" placeholder="+91 9876543210"/>
+          </div>
+          <div class="form-row">
+            <label>Company</label>
+            <input type="text" id="f-company" placeholder="Acme Corp"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Service Interest</label>
+          <select id="f-interest">
+            <option value="">Select a service...</option>
+            <option>Web Development</option>
+            <option>Mobile App Development</option>
+            <option>AI & Automation</option>
+            <option>Cloud Solutions</option>
+            <option>Training Program</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Message</label>
+          <textarea id="f-message" placeholder="Tell us about your project..."></textarea>
+        </div>
+        <button class="submit-btn" onclick="submitLead()">Submit Enquiry →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = '';  // Same origin
+  let sessionId = 'sess_' + Math.random().toString(36).substr(2,9);
+
+  // ── CHAT ──
+  const chatBox = document.getElementById('chat-messages');
+  const chatInput = document.getElementById('chat-input');
+
+  chatInput.addEventListener('keydown', e => { if(e.key === 'Enter') sendMessage(); });
+
+  function addMsg(text, type) {
+    const div = document.createElement('div');
+    div.className = `msg ${type}`;
+    div.textContent = text;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    return div;
+  }
+
+  async function sendMessage() {
+    const msg = chatInput.value.trim();
+    if(!msg) return;
+    chatInput.value = '';
+    addMsg(msg, 'user');
+    const typing = addMsg('Thinking...', 'bot typing');
+
+    try {
+      const res = await fetch(`${API}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg, session_id: sessionId })
+      });
+      const data = await res.json();
+      typing.remove();
+      addMsg(data.reply || data.error, 'bot');
+    } catch(e) {
+      typing.remove();
+      addMsg('Sorry, something went wrong. Please try again.', 'bot');
+    }
+  }
+
+  // ── LEAD FORM ──
+  async function submitLead() {
+    const name  = document.getElementById('f-name').value.trim();
+    const email = document.getElementById('f-email').value.trim();
+    if(!name || !email) { showToast('Name and email are required!', '#ef4444'); return; }
+
+    try {
+      const res = await fetch(`${API}/api/leads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name, email,
+          phone:    document.getElementById('f-phone').value,
+          company:  document.getElementById('f-company').value,
+          interest: document.getElementById('f-interest').value,
+          message:  document.getElementById('f-message').value,
+        })
+      });
+      const data = await res.json();
+      if(data.success) {
+        showToast('✅ ' + data.message);
+        ['f-name','f-email','f-phone','f-company','f-message'].forEach(id =>
+          document.getElementById(id).value = '');
+        document.getElementById('f-interest').value = '';
+      } else {
+        showToast('Error: ' + data.error, '#ef4444');
+      }
+    } catch(e) {
+      showToast('Network error. Try again.', '#ef4444');
+    }
+  }
+
+  function showToast(msg, bg = '#22c55e') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = bg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+</script>
+</body>
+</html>
